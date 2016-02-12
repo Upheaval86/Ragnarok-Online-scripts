@@ -1,0 +1,293 @@
+//Script by Ashley W
+//Script teaches player a new skill by kill monsters for exp
+//Players can only learn skills they can't naturally learn
+//Maps, skills skill levels, and exp needed can easy be set or added in
+
+
+//======== Main NPC in town ==========
+
+gld2_gef,121,94,4	script	Skill Learner	704,{
+	if (getgmlevel () < 99) goto l_regular;
+	menu "GM Menu",l_gm,"Regular Menu",l_regular;
+	l_gm:
+		mes "[Skill Learner]";
+		mes "Hi boss!";
+		mes "Just fyi:";
+		mes "You currently need: " +tokenmax+ " more SLP until you learn your new skill!";
+		next;
+		mes "[Skill Learner]";
+		mes "What level would you like to set your skill token?";
+		mes "It HAS to be 10 or more.";
+		input tokenlvl;
+		next;
+		if (tokenlvl<=9) goto l_gm;
+		mes "[Skill Learner]";
+		mes "Changing....";
+		//sleep2 2000;		
+		set tokenmax,tokenlvl;
+		mes "Done!";
+		close;
+		
+	l_regular:
+	if(skillselect==1){
+			mes "[Skill Learner]";
+			mes "You currently need: " +tokenmax+ " more SLP until you learn your new skill!";
+			mes "You are also, already learning a skill.";
+			mes "Please finish this skill before attempting to learn another new skill.";
+			close;
+			}
+	else{
+				mes "[Skill Learner]";
+				mes "What skill would you like to learn?";
+				switch(select(""+$skname$[0]+":"+$skname$[1]+":"+$skname$[2]+":"+$skname$[3]+":Relearn Skills:Close")){
+						case 1:
+						if(baseclass!=$job[0] && #heallearn==0){
+						set skillid,$skill[0];
+						set skilllv,$sklvl[0];
+						set map$,$map$[0]; //Will this work? lol
+						set tokenmax,$tokenmax[0];
+						set $job,$job[0]; //will this even work? lol
+						set skillselect,1;
+						mes "[Skill Learner]";
+						mes "Please visit the third level of the Lighthalzen dungeon to level your new skill.";
+						close;
+						}
+						else{
+						next;
+						mes "[Skill Learner]";
+						mes "You already learned or you are a job that can learn ["+$skname$[0]+"].";
+						close;
+						}
+						case 2:
+						if(baseclass!=$job[1] && #spiritlearn==0){
+						set skillid,$skill[1];
+						set skilllv,$sklvl[1];
+						set map$,$map$[1]; //Will this work? lol
+						set tokenmax,$tokenmax[1];
+						set $job,$job[1]; //will this even work? lol
+						set skillselect,1;
+						mes "[Skill Learner]";
+						mes "Please visit the third level of the Abyss dungeon to level your new skill.";
+						close;
+						}
+						else{
+						next;
+						mes "[Skill Learner]";
+						mes "You already learned or you are a job that can learn ["+$skname$[1]+"].";
+						close;
+						}
+						case 3:
+						if(baseclass!=$job[2] && #castlearn==0){
+						set skillid,$skill[2];
+						set skilllv,$sklvl[2];
+						set map$,$map$[2]; //Will this work? lol
+						set tokenmax,$tokenmax[2];
+						set $job,$job[2]; //will this even work? lol
+						set skillselect,1;
+						mes "[Skill Learner]";
+						mes "Please visit the third level of the Abbey dungeon to level your new skill.";
+						close;
+						}
+						else{
+						next;
+						mes "[Skill Learner]";
+						mes "You already learned or you are a job that can learn ["+$skname$[2]+"].";
+						close;
+						}
+						case 4:
+						if(baseclass!=$job[3] && #hplearn==0){
+						set skillid,$skill[3];
+						set skilllv,$sklvl[3];
+						set map$,$map$[3]; //Will this work? lol
+						set tokenmax,$tokenmax[3];
+						set $job,$job[3]; //will this even work? lol
+						set skillselect,1;
+						mes "[Skill Learner]";
+						mes "Please visit the second level of the Lighthalzen dungeon to level your new skill.";
+						close;
+						}
+						else{
+						next;
+						mes "[Skill Learner]";
+						mes "You already learned or you are a job that can learn ["+$skname$[3]+"].";
+						close;
+						}
+						case 5:
+						goto l_relearn;
+						case 6:
+						close;
+				}
+	}
+	
+	l_relearn:
+	//if ((#heallearn!=1) && (#spiritlearn!=1) && (#castlearn!=1) && (#hplearn!=1)) goto l_regular;
+		//else{
+			next;
+			mes "[Skill Learner]";
+			mes "Forgot how to use that skill eh?";
+			mes "It's cool, i'll teach it for you,";
+			mes "FREE OF CHARGE!";
+			mes "How cool is that?";
+			next;
+			mes "[Skill Learner]";
+			mes "And...";
+			sleep2 2000;
+			mes "BAM!";//bug right here
+				callfunc("f_relearn");
+				//callfunc("f_skill",skillid,skilllv);
+			mes "You're welcome Adventurer!";
+			mes "Feel free to come back anytime!";
+			close;
+		//}
+
+//====== Login =======
+OnPCLoginEvent:
+	if(setcheck==0) {
+	setarray $skill[0],28,261,278,4;
+	setarray $sklvl[0],10,5,10,10;
+	setarray $job[0],4,4,2,1;
+	setarray $tokenmax[0],200,500,700,500;
+	setarray $map$[0],"lhz_dun03","abyss_03","abbey03","lhz_dun02";
+	setarray $skname$[0],"Heal","Call Spirits","Free Casting","Increase HP Recovery";
+	set #heallearn,0;
+	set #spiritlearn,0;
+	set #castlearn,0;
+	set #hplearn,0;
+	set setcheck,1;
+	set skillselect,0;
+	}
+	set .@loop,0;
+	callfunc("f_relearn");
+	if(tokenmax>=1 && skillselect==1){
+	dispbottom "You currently need: " +tokenmax+ " more SLP until you learn your new skill!";
+	close;
+	}
+
+
+//======== Monster being killed ============
+
+OnNPCKillEvent:
+	
+		if(getskilllv(skillid)>=1){
+		end;
+		}
+		else{
+			if(skillselect==1){
+				getmapxy(@mapname$,@mapx,@mapy,0);
+				if ((@mapname$ == map$) && (baseclass!=$job)) {
+				set tokenmax,tokenmax - 1;
+					if(tokenmax>=1){
+						if(tokenmax % 10 == 0){
+						dispbottom "You currently need: " +tokenmax+ " more SLP to learn your new skill.";
+						}
+					}
+					else{
+						if(skillid==$skill[0]){
+							do{
+								set #heallearn,1;
+								set skillid,$skill[0];
+								set skilllv,$sklvl[0];
+								dispbottom "You have earned your new skill.";
+								dispbottom "Congratulations!";
+								specialeffect2 EF_LIGHTBOLT;
+								sleep2 300;
+								specialeffect2 EF_WARP;
+								callfunc("f_skill",skillid,skilllv);
+								set .@loop,1;
+							}
+							while(.@loop==0);
+						}
+						else if(skillid==$skill[1]){
+							do{
+								set #spiritlearn,1;
+								set skillid,$skill[1];
+								set skilllv,$sklvl[1];
+								dispbottom "You have earned your new skill.";
+								dispbottom "Congratulations!";
+								specialeffect2 EF_LIGHTBOLT;
+								sleep2 300;
+								specialeffect2 EF_WARP;
+								callfunc("f_skill",skillid,skilllv);
+								set .@loop,1;
+							}
+							while(.@loop==0);
+						}
+						else if(skillid==$skill[2]){
+							do{
+								set #castlearn,1;
+								set skillid,$skill[2];
+								set skilllv,$sklvl[2];
+								dispbottom "You have earned your new skill.";
+								dispbottom "Congratulations!";
+								specialeffect2 EF_LIGHTBOLT;
+								sleep2 300;
+								specialeffect2 EF_WARP;
+								callfunc("f_skill",skillid,skilllv);
+								set .@loop,1;
+							}
+							while(.@loop==0);
+						}
+						else if(skillid==$skill[3]){
+							do{
+								set #hplearn,1;
+								set skillid,$skill[3];
+								set skilllv,$sklvl[3];
+								dispbottom "You have earned your new skill.";
+								dispbottom "Congratulations!";
+								specialeffect2 EF_LIGHTBOLT;
+								sleep2 300;
+								specialeffect2 EF_WARP;
+								callfunc("f_skill",skillid,skilllv);
+								set .@loop,1;
+							}
+							while(.@loop==0);
+						}
+						else{
+						close;
+						}
+					}
+				}
+				else{
+				end;
+				}
+			}
+		}
+}
+function	script	f_relearn	{
+l_start:
+	for( set .@i,0; .@i==4; set .@i,.@i+1)
+	{
+		if((#heallearn==1) && (getskilllv($skill[0])==0)){
+			set skillid,$skill[0];
+			set skilllv,$sklvl[0];
+			callfunc("f_skill",skillid,skilllv);
+			goto l_start;
+		}
+		if((#spiritlearn==1) && (getskilllv($skill[1])==0)){
+			set skillid,$skill[1];
+			set skilllv,$sklvl[1];
+			callfunc("f_skill",skillid,skilllv);
+			goto l_start;
+		}
+		if((#castlearn==1) && (getskilllv($skill[2])==0)){
+			set skillid,$skill[2];
+			set skilllv,$sklvl[2];
+			callfunc("f_skill",skillid,skilllv);
+			goto l_start;
+		}
+		if((#hplearn==1) && (getskilllv($skill[3])==0)){
+			set skillid,$skill[3];
+			set skilllv,$sklvl[3];
+			callfunc("f_skill",skillid,skilllv);
+			goto l_start;
+		} 
+		else{
+			return;
+		}
+	}
+}
+function	script	f_skill	{
+	skill skillid,skilllv,0;
+	set skillselect,0;
+	return;
+}
