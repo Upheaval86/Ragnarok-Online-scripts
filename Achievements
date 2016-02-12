@@ -1,0 +1,182 @@
+//Need to convert monster killed script to callable function
+//achievements can give stat bonus's and also points, like gamerscore
+//set an arrary for points: ie - 5,10,25,50,100. That way new achievements can just draw from this arrary
+//#points is how kafra points are read
+//make all achievement announcements account toggle on off
+gld2_gef,105,93,5	script	Achievements	874,{
+	if (getgmlevel () < 99) goto l_regular;
+	menu "GM Menu",l_gm,"Regular Menu",l_regular;
+		l_gm:
+		set anubiscount,0;
+		set ptsscore,0;
+		set	anubachieve,0;
+		close;
+		l_regular:
+		mes "[Achievement Guide]";
+		mes "You've currently killed "+anubiscount+" Anubi.";
+		mes "You've currently killed "+pipcount+" Pipguins.";
+		mes "Your AudioRO score is "+ptsscore+" AP.";//achievement points
+		//mes "You are testing the ["+ $achievename$[0] +"] achievement.";
+		close;
+		
+OnTimer30000:
+	if((countitem(30054)) && (excalachieve==0)){
+		set excalachieve,1;
+		set ptsscore,ptsscore + $ptsvalue[2];
+		//status2 bSTR,1;
+		emotion e_grat;
+		announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[4] +"] ",bc_all;
+	}
+	else if((@afk!=720) && (afkachieve==0)){
+		getmapxy( .@map$, .@x, .@y, 0 );
+			if(@map$ == .@map$ && @x == .@x && @y == .@y) {
+				set @afk, @afk + 1;
+			}
+			//If move timer resets
+			else {
+				set @afk, 0;
+				set @map$, .@map$; set @x, .@x; set @y, .@y;
+			}
+			// Idle Check for 6 hours or 360 minutes, @afk==2 is one minute
+			if(@afk == 720) {
+				set ptsscore,ptsscore + $ptsvalue[0];
+				set afkachieve,1;
+				//statusup2 bLuk,1;
+				emotion e_grat;
+				announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[11] +"] ",bc_all;
+				stopnpctimer;
+				//end;
+			}
+		end;
+	}
+	else if((readparam(zeny)>=10000000) && (zeny1achieve==0)){
+		set ptsscore,ptsscore + $ptsvalue[0];
+		set zeny1achieve,1;
+		//statusup2 bLuk,1;
+		emotion e_grat;
+		announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[7] +"] ",bc_all;
+	}
+	else if((readparam(zeny)>=100000000) && (zeny2achieve==0)){
+		set ptsscore,ptsscore + $ptsvalue[1];
+		set zeny2achieve,1;
+		//statusup2 bLuk,3;
+		emotion e_grat;
+		announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[8] +"] ",bc_all;
+	}
+	else if((readparam(zeny)>=1000000000) && (zeny3achieve==0)){
+		set ptsscore,ptsscore + $ptsvalue[2];
+		set zeny3achieve,1;
+		//statusup2 bLuk,3;
+		emotion e_grat;
+		announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[8] +"] ",bc_all;
+	}
+	else if((#points>=10000) && (kafraachieve==0)){
+		set ptsscore,ptsscore + $ptsvalue[1];
+		set kafraachieve,1;
+		//statusup2 bLuk,3;
+		emotion e_grat;
+		announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[14] +"] ",bc_all;
+	}
+	else if((#points>=15000) && (kafraachieve2==0)){
+			set ptsscore,ptsscore + $ptsvalue[2];
+			set kafraachieve2,1;
+			//statusup2 bLuk,3;
+			emotion e_grat;
+			announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[17] +"] ",bc_all;
+	}
+	else if((countitem(30070)) && (countitem(30072)) && (countitem(30071)) && (wingachieve==0)){
+		set ptsscore,ptsscore + $ptsvalue[2];
+		set wingachieve,1;
+		emotion e_grat;
+		announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[13] +"] ",bc_all;
+	}
+	else if((death>=1000) && (deadachieve==0)){
+		set ptsscore,ptsscore + $ptsvalue[3];
+		set deadachieve,1;
+		emotion e_grat;
+		announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[16] +"] ",bc_all;
+	}
+
+OnPCKillEvent:
+	if((killedrid==(getcharid(0),"Kuro")) && (kuroachieve==0)){
+		set ptsscore,ptsscore + $ptsvalue[1];
+		set kuroachieve,1;
+		emotion e_grat;
+		announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[10] +"] ",bc_all;
+	}
+
+OnPCLoginEvent:
+	if(setcheck==0){
+	set setcheck,1;
+	set anubiscount,0;
+	set pipcount,0;
+	set predcount,0;
+	set cerbcount,0;
+	set ptsscore,0;
+	}
+	setarray $ptsvalue[0],5,10,15,25,50,100;
+	setarray $achievename$[0],"A-Newb-Is Anubis","Death's Advocate","I hate fat things","Stop Spawning Penguins!","False Gilgamesh","Way of the Jungle","Through Hell and Back","They're all lucky","Nothing to spend on","Donald Trump","Save the World","Pretty Statue","Fumbi Master","High Flyer","Points Leader","Stop the Zombie Apocalypse","Super Nova","High Score","A Winrar is you";
+	attachnpctimer ""+strcharinfo(0)+"";
+	initnpctimer;
+	end;
+	
+OnNPCKillEvent:
+	if(killedrid==1098){
+		set anubiscount,anubiscount+1;
+		if((anubiscount==200) && (anubachieve==0)){
+			set ptsscore,ptsscore + $ptsvalue[1];
+			set anubachieve,1;
+			//statusup2 bInt,1;
+			emotion e_grat;
+			announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[0] +"] ",bc_all;
+		}
+		else if((anubiscount==500) && (anubachieve2==0)){
+			set ptsscore,ptsscore + $ptsvalue[2];
+			set anubachieve2,1;
+			//statusup2 bInt,3;
+			emotion e_grat;
+			announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[1] +"] ",bc_all;
+		}
+	}
+	else if(killedrid==3100){
+		set pipcount,pipcount+1;
+		if((pipcount==500) && (pipachieve==0)){
+			set ptsscore,ptsscore + $ptsvalue[0];
+			set pipachieve,1;
+			//bonus bMaxHP,100;
+			emotion e_grat;
+			announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[2] +"] ",bc_all;
+		}
+		else if((pipcount==1000) && (pipachieve2==0)){
+			set ptsscore,ptsscore + $ptsvalue[1];
+			set pipachieve2,1;
+			//bonus bMaxHP,300;
+			emotion e_grat;
+			announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[3] +"] ",bc_all;
+		}
+	else if(killedrid==3043){
+	set predcount,predcount+1;
+		if((predcount==3) && (predachieve==0)){
+			set ptsscore,ptsscore + $ptsvalue[3];
+			set predachieve,1;
+			//bonus bMaxHP,50;
+			//bonus bMaxSP,20;
+			emotion e_grat;
+			announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[5] +"] ",bc_all;
+		}
+	}
+	else if(killedrid==3059){
+		set cerbcount,cerbcount+1;
+			if((cerbcount==3) && (cerbachieve==0)){
+				set ptsscore,ptsscore + $ptsvalue[3];
+				set cerbachieve,1;
+				//bonus bMaxHP,1000;
+				emotion e_grat;
+				announce " "+strcharinfo(0)+" has earned the achievement: ["+ $achievename$[6] +"] ",bc_all;
+			}
+		}
+	}
+	//this will be achievement 15, killing 10,000 undead types
+	//else if(undeadachieve==0){
+	//if((getmonsterinfo("+@mob+",20))==9)
+}
